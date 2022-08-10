@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">Money</string>
+	<string name="month">Monat</string>
+	<string name="year">Jahr</string>
+	<string name="current_balance">Zwischenbilanz</string>
+	<string name="all">Alle</string>
+	<string name="snackbar_title">%s gelöscht</string>
+	<string name="snackbar_undo">Rückgängig</string>
+	<string name="error_too_many_chars">Zu viele Zeichen</string>
+	<string name="select_date">Datum auswählen</string>
+	<string name="error_empty_reason">Grund darf nicht leer sein</string>
+	<string name="error_empty_amount">Kosten dürfen nicht leer sein</string>
+	<string name="error_empty_date">Datum darf nicht leer sein</string>
+	<string name="dialog_add">Hinzufügen</string>
+	<string name="dialog_cancel">Abbrechen</string>
+	<string name="dialog_header">Neue Ausgabe hinzufügen</string>
+	<string name="reason_hint">Grund</string>
+	<string name="amount_hint">Kosten</string>
+	<string name="date_hint">Datum</string>
+	<string name="description_hint">Beschreibung</string>
+	<string name="fab_desc">Ausgabe hinzufügen</string>
+</resources>

@@ -1,0 +1,24 @@
+<resources>
+	<string name="app_name">Money</string>
+	<string name="month">Month</string>
+	<string name="year">Year</string>
+	<string name="current_balance">Current Balance:</string>
+	<string name="euro_sign" translatable="false">€</string>
+	<string name="zero" translatable="false">0</string>
+	<string name="all">All</string>
+	<string name="snackbar_title">Deleted %s</string>
+	<string name="snackbar_undo">Undo</string>
+	<string name="error_too_many_chars">Too many Characters</string>
+	<string name="select_date">Select date</string>
+	<string name="error_empty_reason">Empty Reason not allowed</string>
+	<string name="error_empty_amount">Must specify amount</string>
+	<string name="error_empty_date">You need to specify a date</string>
+	<string name="dialog_add">Add</string>
+	<string name="dialog_cancel">Cancel</string>
+	<string name="dialog_header">Add a new expense</string>
+	<string name="reason_hint">Reason</string>
+	<string name="amount_hint">Amount</string>
+	<string name="date_hint">Date</string>
+	<string name="description_hint">Description</string>
+	<string name="fab_desc">Add Expense</string>
+</resources>
