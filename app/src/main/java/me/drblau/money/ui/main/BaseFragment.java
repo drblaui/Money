@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.util.Calendar;
 import java.util.Locale;
 
 import me.drblau.money.R;
@@ -76,6 +77,17 @@ public class BaseFragment extends Fragment {
             if(allExpenses >= 0) amountView.setTextColor(Color.GREEN);
             else amountView.setTextColor(Color.RED);
             ((TextView) view.findViewById(R.id.euro_sign)).setTextColor(amountView.getCurrentTextColor());
+
+            //Daily Average
+            TextView averageView = view.findViewById(R.id.average_indicator);
+            int daysOfMonth = Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH);
+            double avg = allExpenses / daysOfMonth;
+            String average = (avg < 0 ? "" : "+") + String.format(Locale.getDefault(), "%.2f", avg);
+            averageView.setText(average);
+            //Prettify numbers
+            if(avg >= 0) averageView.setTextColor(Color.GREEN);
+            else averageView.setTextColor(Color.RED);
+            ((TextView) view.findViewById(R.id.euro_sign_avg)).setTextColor(averageView.getCurrentTextColor());
         });
 
         //FAB

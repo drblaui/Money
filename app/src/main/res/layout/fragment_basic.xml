@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
 
@@ -38,6 +39,43 @@
 			android:layout_height="wrap_content"
 			android:text="@string/euro_sign"
 			android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+	</LinearLayout>
+
+	<LinearLayout
+		android:id="@+id/daily_average"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginTop="15dp"
+		android:orientation="horizontal"
+		android:gravity="center"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toTopOf="parent"
+		app:layout_constraintVertical_bias="0.05">
+
+		<TextView
+			android:id="@+id/average_title"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginEnd="5dp"
+			android:text="@string/daily_average"
+			android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+		<TextView
+			android:id="@+id/average_indicator"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/zero"
+			android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+		<TextView
+			android:id="@+id/euro_sign_avg"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/euro_sign"
+			android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 	</LinearLayout>
 
 	<androidx.recyclerview.widget.RecyclerView
@@ -50,7 +88,7 @@
 		app:layout_constraintBottom_toBottomOf="parent"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintStart_toStartOf="parent"
-		app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+		app:layout_constraintTop_toBottomOf="@id/daily_average"
 		app:layout_constraintVertical_bias="0.05" >
 
 	</androidx.recyclerview.widget.RecyclerView>
