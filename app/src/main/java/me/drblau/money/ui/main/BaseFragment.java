@@ -32,16 +32,21 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Locale;
 
 import me.drblau.money.R;
+import me.drblau.money.db.Expense;
 import me.drblau.money.ui.AddDialog;
 
 public class BaseFragment extends Fragment {
@@ -81,6 +86,15 @@ public class BaseFragment extends Fragment {
                     intent.putExtra(Intent.EXTRA_TITLE, "money-data.json");
 
                     startActivityForResult(intent, CREATE_FILE);
+            });
+
+            Button imp = view.findViewById(R.id.import_button);
+            imp.setOnClickListener(button -> {
+                int SELECT_FILE = 2;
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType(MimeTypeMap.getSingleton().getMimeTypeFromExtension("json"));
+                startActivityForResult(intent, SELECT_FILE);
             });
         }
         else {
@@ -130,13 +144,10 @@ public class BaseFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        sharedModel = new ViewModelProvider(requireActivity()).get(ExpenseViewModel.class);
         if(requestCode == 1 && resultCode == Activity.RESULT_OK) {
-            Uri uri = null;
             if(data != null) {
-                uri = data.getData();
-                sharedModel = new ViewModelProvider(requireActivity()).get(ExpenseViewModel.class);
                 sharedModel.select(2);
-                Uri finalUri = uri;
                 sharedModel.getSelected().observe(getViewLifecycleOwner(), expenses -> {
                     JSONArray json = new JSONArray();
                     for (int i = 0; i < expenses.size(); i++) {
@@ -160,6 +171,37 @@ public class BaseFragment extends Fragment {
                         e.printStackTrace();
                     }
                 });
+            }
+        }
+        else if(requestCode == 2 && resultCode == Activity.RESULT_OK) {
+            if(data != null) {
+                System.out.println(data.getData());
+                FileInputStream fis;
+                StringBuilder builder = new StringBuilder("");
+                try {
+                    fis = (FileInputStream) getActivity().getContentResolver().openInputStream(data.getData());
+                    byte[] buffer = new byte[1024];
+                    int n;
+                    while((n = fis.read(buffer)) != -1) {
+                        builder.append(new String(buffer, 0, n));
+                    }
+                    JSONArray arr = new JSONArray(builder.toString());
+                    for(int i = 0; i < arr.length(); i++) {
+                        JSONObject obj = (JSONObject) arr.get(i);
+                        String[] date = obj.getString("date").split("\\.");
+                        Expense exp = new Expense(
+                                obj.getString("reason"),
+                                obj.getString("description"),
+                                obj.getDouble("amount"),
+                                Integer.parseInt(date[0]),
+                                Integer.parseInt(date[1]),
+                                Integer.parseInt(date[2])
+                        );
+                        sharedModel.insert(exp);
+                    }
+                } catch (IOException | JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
