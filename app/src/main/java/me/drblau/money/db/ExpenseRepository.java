@@ -39,6 +39,10 @@ public class ExpenseRepository {
         AppDatabase.dbWriteExecutor.execute(() -> expenseDAO.delete(expense));
     }
 
+    public void clear() {
+        AppDatabase.dbWriteExecutor.execute(expenseDAO::clear);
+    }
+
     private static void generateTestData(ExpenseDAO dao) {
         AppDatabase.dbWriteExecutor.execute(() -> {
             dao.clear();

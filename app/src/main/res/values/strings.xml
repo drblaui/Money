@@ -25,4 +25,9 @@
     <string name="settings">Settings</string>
     <string name="export_data">Export Data</string>
     <string name="import_data">Import Data</string>
+    <string name="delete_all_data">Delete all data</string>
+    <string name="confirm_delete">Are you sure you want to delete your entire data?</string>
+	<string name="positive">Yes</string>
+	<string name="negative">No</string>
+    <string name="data_deleted">Deleted all data</string>
 </resources>

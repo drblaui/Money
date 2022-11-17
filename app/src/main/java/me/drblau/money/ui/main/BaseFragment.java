@@ -2,6 +2,8 @@ package me.drblau.money.ui.main;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -12,6 +14,7 @@ import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,6 +50,7 @@ import java.util.Locale;
 
 import me.drblau.money.R;
 import me.drblau.money.db.Expense;
+import me.drblau.money.db.ExpenseRepository;
 import me.drblau.money.ui.AddDialog;
 
 public class BaseFragment extends Fragment {
@@ -95,6 +99,22 @@ public class BaseFragment extends Fragment {
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 intent.setType(MimeTypeMap.getSingleton().getMimeTypeFromExtension("json"));
                 startActivityForResult(intent, SELECT_FILE);
+            });
+
+            Button delete = view.findViewById(R.id.delete);
+            delete.setOnClickListener(button -> {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setMessage(R.string.confirm_delete)
+                        .setPositiveButton(R.string.positive, (dialogInterface, i) -> {
+                            sharedModel = new ViewModelProvider(requireActivity()).get(ExpenseViewModel.class);
+                            sharedModel.clear();
+                            Toast.makeText(getContext(), getString(R.string.data_deleted), Toast.LENGTH_LONG).show();
+                        })
+                        .setNegativeButton(R.string.negative, (dialogInterface, i) -> {
+                            dialogInterface.dismiss();
+                        });
+                AlertDialog dialog = builder.create();
+                dialog.show();
             });
         }
         else {
