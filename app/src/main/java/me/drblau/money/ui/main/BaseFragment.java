@@ -1,10 +1,16 @@
 package me.drblau.money.ui.main;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -19,6 +25,19 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -52,54 +71,108 @@ public class BaseFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        sharedModel = new ViewModelProvider(requireActivity()).get(ExpenseViewModel.class);
-        sharedModel.select(pos);
-        //List
-        RecyclerView recyclerView = view.findViewById(R.id.item_recycler);
-        final ExpenseListAdapter adapter = new ExpenseListAdapter(new ExpenseListAdapter.ExpenseDiff(), sharedModel);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        DividerItemDecoration deco = new DividerItemDecoration(this.getContext(), DividerItemDecoration.VERTICAL);
-        deco.setDrawable(getActivity().getDrawable(R.drawable.divider));
-        recyclerView.addItemDecoration(deco);
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeToDeleteCallback(adapter, getContext()));
-        itemTouchHelper.attachToRecyclerView(recyclerView);
+        if(pos == 3) {
+            Button btn = view.findViewById(R.id.export);
+            btn.setOnClickListener(button -> {
+                    int CREATE_FILE = 1;
+                    Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType(MimeTypeMap.getSingleton().getMimeTypeFromExtension("json"));
+                    intent.putExtra(Intent.EXTRA_TITLE, "money-data.json");
 
-        TextView amountView = view.findViewById(R.id.amount_indicator);
-        sharedModel.getSelected().observe(getViewLifecycleOwner(), expensesList-> {
-            adapter.submitList(expensesList);
-            double allExpenses = expensesList
-                    .stream()
-                    .mapToDouble(expense -> expense.amount)
-                    .sum();
-            amountView.setText(String.format(Locale.getDefault(), "%.2f", allExpenses));
-            //Prettify numbers
-            if(allExpenses >= 0) amountView.setTextColor(Color.GREEN);
-            else amountView.setTextColor(Color.RED);
-            ((TextView) view.findViewById(R.id.euro_sign)).setTextColor(amountView.getCurrentTextColor());
+                    startActivityForResult(intent, CREATE_FILE);
+            });
+        }
+        else {
+            sharedModel = new ViewModelProvider(requireActivity()).get(ExpenseViewModel.class);
+            sharedModel.select(pos);
+            //List
+            RecyclerView recyclerView = view.findViewById(R.id.item_recycler);
+            final ExpenseListAdapter adapter = new ExpenseListAdapter(new ExpenseListAdapter.ExpenseDiff(), sharedModel);
+            recyclerView.setAdapter(adapter);
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            DividerItemDecoration deco = new DividerItemDecoration(this.getContext(), DividerItemDecoration.VERTICAL);
+            deco.setDrawable(getActivity().getDrawable(R.drawable.divider));
+            recyclerView.addItemDecoration(deco);
+            ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeToDeleteCallback(adapter, getContext()));
+            itemTouchHelper.attachToRecyclerView(recyclerView);
 
-            //Daily Average
-            TextView averageView = view.findViewById(R.id.average_indicator);
-            int daysOfMonth = Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH);
-            double avg = allExpenses / daysOfMonth;
-            String average = (avg < 0 ? "" : "+") + String.format(Locale.getDefault(), "%.2f", avg);
-            averageView.setText(average);
-            //Prettify numbers
-            if(avg >= 0) averageView.setTextColor(Color.GREEN);
-            else averageView.setTextColor(Color.RED);
-            ((TextView) view.findViewById(R.id.euro_sign_avg)).setTextColor(averageView.getCurrentTextColor());
-        });
+            TextView amountView = view.findViewById(R.id.amount_indicator);
+            sharedModel.getSelected().observe(getViewLifecycleOwner(), expensesList-> {
+                adapter.submitList(expensesList);
+                double allExpenses = expensesList
+                        .stream()
+                        .mapToDouble(expense -> expense.amount)
+                        .sum();
+                amountView.setText(String.format(Locale.getDefault(), "%.2f", allExpenses));
+                //Prettify numbers
+                if(allExpenses >= 0) amountView.setTextColor(Color.GREEN);
+                else amountView.setTextColor(Color.RED);
+                ((TextView) view.findViewById(R.id.euro_sign)).setTextColor(amountView.getCurrentTextColor());
 
-        //FAB
-        FloatingActionButton fab = view.findViewById(R.id.action_add);
-        fab.setOnClickListener(fabItem -> new AddDialog().showDialog(view, BaseFragment.this, sharedModel));
+                //Daily Average
+                TextView averageView = view.findViewById(R.id.average_indicator);
+                int daysOfMonth = Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH);
+                double avg = allExpenses / daysOfMonth;
+                String average = (avg < 0 ? "" : "+") + String.format(Locale.getDefault(), "%.2f", avg);
+                averageView.setText(average);
+                //Prettify numbers
+                if(avg >= 0) averageView.setTextColor(Color.GREEN);
+                else averageView.setTextColor(Color.RED);
+                ((TextView) view.findViewById(R.id.euro_sign_avg)).setTextColor(averageView.getCurrentTextColor());
+            });
+
+            //FAB
+            FloatingActionButton fab = view.findViewById(R.id.action_add);
+            fab.setOnClickListener(fabItem -> new AddDialog().showDialog(view, BaseFragment.this, sharedModel));
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if(requestCode == 1 && resultCode == Activity.RESULT_OK) {
+            Uri uri = null;
+            if(data != null) {
+                uri = data.getData();
+                sharedModel = new ViewModelProvider(requireActivity()).get(ExpenseViewModel.class);
+                sharedModel.select(2);
+                Uri finalUri = uri;
+                sharedModel.getSelected().observe(getViewLifecycleOwner(), expenses -> {
+                    JSONArray json = new JSONArray();
+                    for (int i = 0; i < expenses.size(); i++) {
+                        JSONObject curr = new JSONObject();
+                        try {
+                            curr.put("reason", expenses.get(i).reason);
+                            curr.put("amount", expenses.get(i).amount);
+                            curr.put("date", String.format("%d.%d.%d", expenses.get(i).day, expenses.get(i).month, expenses.get(i).year));
+                            curr.put("description", expenses.get(i).description);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        json.put(curr);
+                    }
+                    try {
+                        FileOutputStream fos = (FileOutputStream) getActivity().getContentResolver().openOutputStream(data.getData());
+                        fos.write(json.toString().getBytes(StandardCharsets.UTF_8));
+                        fos.flush();
+                        fos.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
+        }
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
-        return inflater.inflate(R.layout.fragment_basic, container, false);
+        if(pos == 3) {
+            return inflater.inflate(R.layout.fragment_extra, container, false);
+        }
+        else {
+            return inflater.inflate(R.layout.fragment_basic, container, false);
+        }
     }
 
 }
