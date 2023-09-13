@@ -1,12 +1,9 @@
 package me.drblau.money.ui.main;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,31 +23,20 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.textfield.TextInputEditText;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Locale;
 
 import me.drblau.money.R;
 import me.drblau.money.db.Expense;
-import me.drblau.money.db.ExpenseRepository;
 import me.drblau.money.ui.AddDialog;
 
 public class BaseFragment extends Fragment {
@@ -185,7 +171,6 @@ public class BaseFragment extends Fragment {
                     try {
                         FileOutputStream fos = (FileOutputStream) getActivity().getContentResolver().openOutputStream(data.getData());
                         fos.write(json.toString().getBytes(StandardCharsets.UTF_8));
-                        fos.flush();
                         fos.close();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -195,9 +180,8 @@ public class BaseFragment extends Fragment {
         }
         else if(requestCode == 2 && resultCode == Activity.RESULT_OK) {
             if(data != null) {
-                System.out.println(data.getData());
                 FileInputStream fis;
-                StringBuilder builder = new StringBuilder("");
+                StringBuilder builder = new StringBuilder();
                 try {
                     fis = (FileInputStream) getActivity().getContentResolver().openInputStream(data.getData());
                     byte[] buffer = new byte[1024];
@@ -205,6 +189,7 @@ public class BaseFragment extends Fragment {
                     while((n = fis.read(buffer)) != -1) {
                         builder.append(new String(buffer, 0, n));
                     }
+                    fis.close();
                     JSONArray arr = new JSONArray(builder.toString());
                     for(int i = 0; i < arr.length(); i++) {
                         JSONObject obj = (JSONObject) arr.get(i);
