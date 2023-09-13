@@ -19,7 +19,7 @@ import me.drblau.money.R;
 public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @StringRes
-    private static final int[] TAB_TITLES = new int[]{R.string.month, R.string.year, R.string.all};
+    private static final int[] TAB_TITLES = new int[]{R.string.month, R.string.year, R.string.all, R.string.settings};
     private final Context mContext;
 
     public SectionsPagerAdapter(Context context, FragmentManager fm) {

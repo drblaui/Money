@@ -11,7 +11,7 @@ import me.drblau.money.databinding.ActivityMainBinding;
 import me.drblau.money.ui.main.SectionsPagerAdapter;
 
 public class MainActivity extends AppCompatActivity {
-
+    //TODO: allow parsing JSON files
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

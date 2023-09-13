@@ -54,4 +54,8 @@ public class ExpenseViewModel extends AndroidViewModel {
     void delete(Expense expense) {
         repo.delete(expense);
     }
+
+    void clear() {
+        repo.clear();
+    }
 }
