@@ -32,6 +32,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -118,7 +123,7 @@ public class BaseFragment extends Fragment {
             itemTouchHelper.attachToRecyclerView(recyclerView);
 
             TextView amountView = view.findViewById(R.id.amount_indicator);
-            sharedModel.getSelected().observe(getViewLifecycleOwner(), expensesList-> {
+            sharedModel.getSelected().observe(getViewLifecycleOwner(), expensesList -> {
                 adapter.submitList(expensesList);
                 double allExpenses = expensesList
                         .stream()
@@ -132,8 +137,25 @@ public class BaseFragment extends Fragment {
 
                 //Daily Average
                 TextView averageView = view.findViewById(R.id.average_indicator);
-                int daysOfMonth = Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH);
-                double avg = allExpenses / daysOfMonth;
+                int days;
+                switch(pos) {
+                    case 1:
+                        days = Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
+                        break;
+                    case 2:
+                        int i = expensesList.size()-1;
+                        String date = String.format("%d.%d.%d", expensesList.get(i).day, expensesList.get(i).month, expensesList.get(i).year);
+                        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("d.M.yyyy");
+                        LocalDate start = LocalDate.parse(date, dtf);
+                        LocalDate end = LocalDate.now();
+                        days = (int) ChronoUnit.DAYS.between(start, end);
+                        System.out.println(days);
+                        break;
+                    default:
+                        days = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+                        break;
+                }
+                double avg = allExpenses / days;
                 String average = (avg < 0 ? "" : "+") + String.format(Locale.getDefault(), "%.2f", avg);
                 averageView.setText(average);
                 //Prettify numbers
