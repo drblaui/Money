@@ -138,24 +138,42 @@ public class BaseFragment extends Fragment {
                 //Daily Average
                 TextView averageView = view.findViewById(R.id.average_indicator);
                 int days;
+                double calcExpenses;
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("d.M.yyyy");
                 switch(pos) {
                     case 1:
                         days = Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
+                        calcExpenses = expensesList
+                                .stream()
+                                .filter(expense -> {
+                                    return expense.year == Calendar.getInstance().get(Calendar.YEAR);
+                                })
+                                .mapToDouble(expense -> expense.amount)
+                                .sum();
                         break;
                     case 2:
                         int i = expensesList.size()-1;
                         String date = String.format("%d.%d.%d", expensesList.get(i).day, expensesList.get(i).month, expensesList.get(i).year);
-                        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("d.M.yyyy");
                         LocalDate start = LocalDate.parse(date, dtf);
                         LocalDate end = LocalDate.now();
                         days = (int) ChronoUnit.DAYS.between(start, end);
-                        System.out.println(days);
+                        calcExpenses = allExpenses;
                         break;
                     default:
                         days = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+                        calcExpenses = expensesList
+                                .stream()
+                                .filter((expense -> {
+                                    String formatDate = String.format("%d.%d.%d", expense.day, expense.month, expense.year);
+                                    LocalDate expenseDate = LocalDate.parse(formatDate, dtf);
+                                    LocalDate now = LocalDate.now();
+                                    return !expenseDate.isAfter(now);
+                                }))
+                                .mapToDouble(expense -> expense.amount)
+                                .sum();
                         break;
                 }
-                double avg = allExpenses / days;
+                double avg = calcExpenses / days;
                 String average = (avg < 0 ? "" : "+") + String.format(Locale.getDefault(), "%.2f", avg);
                 averageView.setText(average);
                 //Prettify numbers
