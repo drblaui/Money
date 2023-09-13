@@ -20,4 +20,13 @@
 	<string name="date_hint">Datum</string>
 	<string name="description_hint">Beschreibung</string>
 	<string name="fab_desc">Ausgabe hinzufügen</string>
+    <string name="daily_average">Täglicher Durchschnitt:</string>
+	<string name="settings">Einstellungen</string>
+	<string name="export_data">Daten exportieren</string>
+	<string name="import_data">Daten importieren</string>
+	<string name="delete_all_data">Alle Daten löschen</string>
+	<string name="confirm_delete">Bist du dir sicher, dass du alle deine Daten löschen willst?</string>
+	<string name="positive">Ja</string>
+	<string name="negative">Nein</string>
+	<string name="data_deleted">Alle Daten gelöscht!</string>
 </resources>
