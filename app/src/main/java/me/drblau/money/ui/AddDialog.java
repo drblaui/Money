@@ -39,7 +39,7 @@ public class AddDialog {
         this("", "", "", "");
     }
 
-    //Allows prepopulation
+    //Allows pre population
     public AddDialog(String reason, String amount, String date, String description) {
         prepop[0] = reason;
         prepop[1] = amount;
@@ -166,22 +166,26 @@ public class AddDialog {
 
         //Buttons
         builder.setPositiveButton(R.string.dialog_add, (dialogInterface, i) -> {
+            String amountStr = (amount.getText() == null) ? "" : amount.getText().toString();
+            String dateStr = (date.getText() == null) ? "" : date.getText().toString();
+            String reasonStr = (reason.getText() == null) ? "" : reason.getText().toString();
+            String descStr = (description.getText() == null) ? "" : description.getText().toString();
             //Error handling
             boolean hasError = reason_parent.getError() != null ||
-                    amount.getText().toString().equals("") ||
-                    date.getText().toString().equals("");
+                    amountStr.equals("") ||
+                    dateStr.equals("");
             if(hasError) {
                 String[] valErrors = {null, null, null};
-                if(reason.getText().toString().isEmpty()) {
+                if(reasonStr.isEmpty()) {
                     valErrors[0] = initiator.getString(R.string.error_empty_reason);
                 }
-                if(amount.getText().toString().isEmpty()) {
+                if(amountStr.isEmpty()) {
                     valErrors[1] = initiator.getString(R.string.error_empty_amount);
                 }
-                if(date.getText().toString().isEmpty()) {
+                if(dateStr.isEmpty()) {
                     valErrors[2] = initiator.getString(R.string.error_empty_date);
                 }
-                AddDialog newOne = new AddDialog(reason.getText().toString(), amount.getText().toString(), date.getText().toString(), description.getText().toString());
+                AddDialog newOne = new AddDialog(reasonStr, amountStr, dateStr, descStr);
                 for(int j = 0; j < valErrors.length; j++) {
                     if(valErrors[j] != null) {
                         switch (j) {
@@ -200,10 +204,10 @@ public class AddDialog {
                 newOne.showDialog(parent, initiator, model);
                 return;
             }
-            double amountRes = Double.parseDouble(amount.getText().toString());
-            String[] dateParts = date.getText().toString().split("\\.");
-            Expense expense = new Expense(reason.getText().toString(),
-                    description.getText().toString(),
+            double amountRes = Double.parseDouble(amountStr);
+            String[] dateParts = dateStr.split("\\.");
+            Expense expense = new Expense(reasonStr,
+                    descStr,
                     amountRes,
                     Integer.parseInt(dateParts[0]), Integer.parseInt(dateParts[1]), Integer.parseInt(dateParts[2]));
             model.insert(expense);

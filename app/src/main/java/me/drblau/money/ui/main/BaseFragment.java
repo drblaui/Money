@@ -1,9 +1,11 @@
 package me.drblau.money.ui.main;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -99,9 +102,7 @@ public class BaseFragment extends Fragment {
                             sharedModel.clear();
                             Toast.makeText(getContext(), getString(R.string.data_deleted), Toast.LENGTH_LONG).show();
                         })
-                        .setNegativeButton(R.string.negative, (dialogInterface, i) -> {
-                            dialogInterface.dismiss();
-                        });
+                        .setNegativeButton(R.string.negative, (dialogInterface, i) -> dialogInterface.dismiss());
                 AlertDialog dialog = builder.create();
                 dialog.show();
             });
@@ -114,8 +115,11 @@ public class BaseFragment extends Fragment {
             final ExpenseListAdapter adapter = new ExpenseListAdapter(new ExpenseListAdapter.ExpenseDiff(), sharedModel);
             recyclerView.setAdapter(adapter);
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-            DividerItemDecoration deco = new DividerItemDecoration(this.getContext(), DividerItemDecoration.VERTICAL);
-            deco.setDrawable(getActivity().getDrawable(R.drawable.divider));
+            if(getContext() == null) return;
+            DividerItemDecoration deco = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
+            Drawable divider = AppCompatResources.getDrawable(getContext(), R.drawable.divider);
+            if(divider == null) return;
+            deco.setDrawable(divider);
             recyclerView.addItemDecoration(deco);
             ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeToDeleteCallback(adapter, getContext()));
             itemTouchHelper.attachToRecyclerView(recyclerView);
@@ -143,15 +147,13 @@ public class BaseFragment extends Fragment {
                         days = Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
                         calcExpenses = expensesList
                                 .stream()
-                                .filter(expense -> {
-                                    return expense.year == Calendar.getInstance().get(Calendar.YEAR);
-                                })
+                                .filter(expense -> expense.year == Calendar.getInstance().get(Calendar.YEAR))
                                 .mapToDouble(expense -> expense.amount)
                                 .sum();
                         break;
                     case 2:
                         int i = expensesList.size()-1;
-                        String date = String.format("%d.%d.%d", expensesList.get(i).day, expensesList.get(i).month, expensesList.get(i).year);
+                        String date = String.format(Locale.getDefault(),"%d.%d.%d", expensesList.get(i).day, expensesList.get(i).month, expensesList.get(i).year);
                         LocalDate start = LocalDate.parse(date, dtf);
                         LocalDate end = LocalDate.now();
                         days = (int) ChronoUnit.DAYS.between(start, end);
@@ -162,7 +164,7 @@ public class BaseFragment extends Fragment {
                         calcExpenses = expensesList
                                 .stream()
                                 .filter((expense -> {
-                                    String formatDate = String.format("%d.%d.%d", expense.day, expense.month, expense.year);
+                                    String formatDate = String.format(Locale.getDefault(), "%d.%d.%d", expense.day, expense.month, expense.year);
                                     LocalDate expenseDate = LocalDate.parse(formatDate, dtf);
                                     LocalDate now = LocalDate.now();
                                     return !expenseDate.isAfter(now);
@@ -186,9 +188,12 @@ public class BaseFragment extends Fragment {
         }
     }
 
+    @SuppressLint("Recycle")
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         sharedModel = new ViewModelProvider(requireActivity()).get(ExpenseViewModel.class);
+        androidx.fragment.app.FragmentActivity activity = getActivity();
+        if(activity == null) return;
         if(requestCode == 1 && resultCode == Activity.RESULT_OK) {
             if(data != null) {
                 sharedModel.select(2);
@@ -199,7 +204,7 @@ public class BaseFragment extends Fragment {
                         try {
                             curr.put("reason", expenses.get(i).reason);
                             curr.put("amount", expenses.get(i).amount);
-                            curr.put("date", String.format("%d.%d.%d", expenses.get(i).day, expenses.get(i).month, expenses.get(i).year));
+                            curr.put("date", String.format(Locale.getDefault(), "%d.%d.%d", expenses.get(i).day, expenses.get(i).month, expenses.get(i).year));
                             curr.put("description", expenses.get(i).description);
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -207,7 +212,9 @@ public class BaseFragment extends Fragment {
                         json.put(curr);
                     }
                     try {
-                        FileOutputStream fos = (FileOutputStream) getActivity().getContentResolver().openOutputStream(data.getData());
+                        if(data.getData() == null) return;
+                        FileOutputStream fos = (FileOutputStream) activity.getContentResolver().openOutputStream(data.getData());
+                        if(fos == null) return;
                         fos.write(json.toString().getBytes(StandardCharsets.UTF_8));
                         fos.close();
                     } catch (IOException e) {
@@ -221,13 +228,15 @@ public class BaseFragment extends Fragment {
                 FileInputStream fis;
                 StringBuilder builder = new StringBuilder();
                 try {
-                    fis = (FileInputStream) getActivity().getContentResolver().openInputStream(data.getData());
+                    if (data.getData() == null) return;
+                    fis = (FileInputStream) activity.getContentResolver().openInputStream(data.getData());
+                    if(fis == null) return;
                     byte[] buffer = new byte[1024];
                     int n;
                     while((n = fis.read(buffer)) != -1) {
                         builder.append(new String(buffer, 0, n));
                     }
-                    fis.close();
+                   fis.close();
                     JSONArray arr = new JSONArray(builder.toString());
                     for(int i = 0; i < arr.length(); i++) {
                         JSONObject obj = (JSONObject) arr.get(i);
