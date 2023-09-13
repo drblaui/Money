@@ -1,6 +1,5 @@
 package me.drblau.money.ui.main;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -15,6 +14,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
@@ -50,6 +51,9 @@ public class BaseFragment extends Fragment {
     private final static String ARG_POS = "tab_position";
     private int pos = 0;
     private ExpenseViewModel sharedModel;
+    private ActivityResultLauncher<Intent> createFile;
+
+    private ActivityResultLauncher<Intent> importFile;
 
     public static BaseFragment newInstance(String title, int pos) {
         Bundle args = new Bundle();
@@ -67,30 +71,103 @@ public class BaseFragment extends Fragment {
             pos = getArguments().getInt(ARG_POS);
         }
 
+        createFile = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if(result == null || result.getData() == null) return;
+            if(result.getResultCode() != Activity.RESULT_OK) return;
+            androidx.fragment.app.FragmentActivity activity = getActivity();
+            if(activity == null) return;
+            Intent data = result.getData();
+            JSONArray json = new JSONArray();
+            sharedModel.select(2);
+            sharedModel.getSelected().observe(getViewLifecycleOwner(), expenses -> {
+                for (int i = 0; i < expenses.size(); i++) {
+                    JSONObject curr = new JSONObject();
+                    try {
+                        curr.put("reason", expenses.get(i).reason);
+                        curr.put("amount", expenses.get(i).amount);
+                        curr.put("date", String.format(Locale.getDefault(), "%d.%d.%d", expenses.get(i).day, expenses.get(i).month, expenses.get(i).year));
+                        curr.put("description", expenses.get(i).description);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    json.put(curr);
+                }
+
+                try {
+                    if(data.getData() == null) return;
+                    FileOutputStream fos = (FileOutputStream) activity.getContentResolver().openOutputStream(data.getData());
+                    if(fos == null) return;
+                    fos.write(json.toString().getBytes(StandardCharsets.UTF_8));
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+        });
+
+        importFile = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if(result == null || result.getData() == null) return;
+            if(result.getResultCode() != Activity.RESULT_OK) return;
+            androidx.fragment.app.FragmentActivity activity = getActivity();
+            if(activity == null) return;
+            Intent data = result.getData();
+            FileInputStream fis;
+            StringBuilder builder = new StringBuilder();
+            try {
+                if (data.getData() == null) return;
+                fis = (FileInputStream) activity.getContentResolver().openInputStream(data.getData());
+                if(fis == null) return;
+                byte[] buffer = new byte[1024];
+                int n;
+                while((n = fis.read(buffer)) != -1) {
+                    builder.append(new String(buffer, 0, n));
+                }
+                fis.close();
+                JSONArray arr = new JSONArray(builder.toString());
+                for(int i = 0; i < arr.length(); i++) {
+                    JSONObject obj = (JSONObject) arr.get(i);
+                    String[] date = obj.getString("date").split("\\.");
+                    Expense exp = new Expense(
+                            obj.getString("reason"),
+                            obj.getString("description"),
+                            obj.getDouble("amount"),
+                            Integer.parseInt(date[0]),
+                            Integer.parseInt(date[1]),
+                            Integer.parseInt(date[2])
+                    );
+                    sharedModel.insert(exp);
+                }
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
+            }
+        });
+
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        sharedModel = new ViewModelProvider(requireActivity()).get(ExpenseViewModel.class);
         if(pos == 3) {
             Button btn = view.findViewById(R.id.export);
             btn.setOnClickListener(button -> {
-                    int CREATE_FILE = 1;
                     Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
                     intent.setType(MimeTypeMap.getSingleton().getMimeTypeFromExtension("json"));
                     intent.putExtra(Intent.EXTRA_TITLE, "money-data.json");
 
-                    startActivityForResult(intent, CREATE_FILE);
+                    createFile.launch(intent);
+
             });
 
             Button imp = view.findViewById(R.id.import_button);
             imp.setOnClickListener(button -> {
-                int SELECT_FILE = 2;
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 intent.setType(MimeTypeMap.getSingleton().getMimeTypeFromExtension("json"));
-                startActivityForResult(intent, SELECT_FILE);
+
+                importFile.launch(intent);
             });
 
             Button delete = view.findViewById(R.id.delete);
@@ -108,7 +185,6 @@ public class BaseFragment extends Fragment {
             });
         }
         else {
-            sharedModel = new ViewModelProvider(requireActivity()).get(ExpenseViewModel.class);
             sharedModel.select(pos);
             //List
             RecyclerView recyclerView = view.findViewById(R.id.item_recycler);
@@ -152,12 +228,16 @@ public class BaseFragment extends Fragment {
                                 .sum();
                         break;
                     case 2:
+                        calcExpenses = allExpenses;
                         int i = expensesList.size()-1;
+                        if(i < 0) {
+                            days = 1;
+                            break;
+                        }
                         String date = String.format(Locale.getDefault(),"%d.%d.%d", expensesList.get(i).day, expensesList.get(i).month, expensesList.get(i).year);
                         LocalDate start = LocalDate.parse(date, dtf);
                         LocalDate end = LocalDate.now();
                         days = (int) ChronoUnit.DAYS.between(start, end);
-                        calcExpenses = allExpenses;
                         break;
                     default:
                         days = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
@@ -185,76 +265,6 @@ public class BaseFragment extends Fragment {
             //FAB
             FloatingActionButton fab = view.findViewById(R.id.action_add);
             fab.setOnClickListener(fabItem -> new AddDialog().showDialog(view, BaseFragment.this, sharedModel));
-        }
-    }
-
-    @SuppressLint("Recycle")
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        sharedModel = new ViewModelProvider(requireActivity()).get(ExpenseViewModel.class);
-        androidx.fragment.app.FragmentActivity activity = getActivity();
-        if(activity == null) return;
-        if(requestCode == 1 && resultCode == Activity.RESULT_OK) {
-            if(data != null) {
-                sharedModel.select(2);
-                sharedModel.getSelected().observe(getViewLifecycleOwner(), expenses -> {
-                    JSONArray json = new JSONArray();
-                    for (int i = 0; i < expenses.size(); i++) {
-                        JSONObject curr = new JSONObject();
-                        try {
-                            curr.put("reason", expenses.get(i).reason);
-                            curr.put("amount", expenses.get(i).amount);
-                            curr.put("date", String.format(Locale.getDefault(), "%d.%d.%d", expenses.get(i).day, expenses.get(i).month, expenses.get(i).year));
-                            curr.put("description", expenses.get(i).description);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        json.put(curr);
-                    }
-                    try {
-                        if(data.getData() == null) return;
-                        FileOutputStream fos = (FileOutputStream) activity.getContentResolver().openOutputStream(data.getData());
-                        if(fos == null) return;
-                        fos.write(json.toString().getBytes(StandardCharsets.UTF_8));
-                        fos.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-            }
-        }
-        else if(requestCode == 2 && resultCode == Activity.RESULT_OK) {
-            if(data != null) {
-                FileInputStream fis;
-                StringBuilder builder = new StringBuilder();
-                try {
-                    if (data.getData() == null) return;
-                    fis = (FileInputStream) activity.getContentResolver().openInputStream(data.getData());
-                    if(fis == null) return;
-                    byte[] buffer = new byte[1024];
-                    int n;
-                    while((n = fis.read(buffer)) != -1) {
-                        builder.append(new String(buffer, 0, n));
-                    }
-                   fis.close();
-                    JSONArray arr = new JSONArray(builder.toString());
-                    for(int i = 0; i < arr.length(); i++) {
-                        JSONObject obj = (JSONObject) arr.get(i);
-                        String[] date = obj.getString("date").split("\\.");
-                        Expense exp = new Expense(
-                                obj.getString("reason"),
-                                obj.getString("description"),
-                                obj.getDouble("amount"),
-                                Integer.parseInt(date[0]),
-                                Integer.parseInt(date[1]),
-                                Integer.parseInt(date[2])
-                        );
-                        sharedModel.insert(exp);
-                    }
-                } catch (IOException | JSONException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
