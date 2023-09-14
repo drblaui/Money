@@ -26,8 +26,8 @@ public class ExpenseViewHolder extends RecyclerView.ViewHolder {
 
     public void bind(String reason, double amount, String date) {
         this.reason.setText(reason);
-        if(amount < 0) this.amount.setBackgroundColor(Color.RED);
-        else this.amount.setBackgroundColor(Color.GREEN);
+        if(amount < 0) this.amount.setTextColor(Color.RED);
+        else this.amount.setTextColor(Color.GREEN);
         this.amount.setText(String.format(Locale.getDefault(), "%s%.2f€", (amount >= 0 ? "+" : ""), amount));
         this.date.setText(date);
     }
