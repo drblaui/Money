@@ -209,8 +209,8 @@ public class BaseFragment extends Fragment {
                         .sum();
                 amountView.setText(String.format(Locale.getDefault(), "%.2f", allExpenses));
                 //Prettify numbers
-                if(allExpenses >= 0) amountView.setTextColor(Color.GREEN);
-                else amountView.setTextColor(Color.RED);
+                if(allExpenses >= 0) amountView.setTextColor(getContext().getColor(R.color.success));
+                else amountView.setTextColor( getContext().getColor(R.color.error));
                 ((TextView) view.findViewById(R.id.euro_sign)).setTextColor(amountView.getCurrentTextColor());
 
                 //Daily Average
@@ -257,8 +257,8 @@ public class BaseFragment extends Fragment {
                 String average = (avg < 0 ? "" : "+") + String.format(Locale.getDefault(), "%.2f", avg);
                 averageView.setText(average);
                 //Prettify numbers
-                if(avg >= 0) averageView.setTextColor(Color.GREEN);
-                else averageView.setTextColor(Color.RED);
+                if(avg >= 0) averageView.setTextColor(getContext().getColor(R.color.success));
+                else averageView.setTextColor(getContext().getColor(R.color.error));
                 ((TextView) view.findViewById(R.id.euro_sign_avg)).setTextColor(averageView.getCurrentTextColor());
             });
 
