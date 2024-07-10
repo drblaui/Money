@@ -3,9 +3,6 @@ package me.drblau.money.ui.main;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.view.View;
@@ -26,7 +23,7 @@ public class SwipeToDeleteCallback extends ItemTouchHelper.SimpleCallback {
         super(0, ItemTouchHelper.LEFT);
         this.adapter = adapter;
         icon = ContextCompat.getDrawable(context, R.drawable.ic_trash);
-        bg = new ColorDrawable(Color.RED);
+        bg = new ColorDrawable(Color.parseColor("#B00020"));
     }
 
     @Override

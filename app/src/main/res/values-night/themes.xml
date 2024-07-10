@@ -13,4 +13,13 @@
 		<item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
 		<!-- Customize your theme here. -->
 	</style>
+	<style name="headline">
+		<item name="android:textColor">#E6E0E9</item>
+	</style>
+	<style name="date">
+		<item name="android:textColor">#CAC4D0</item>
+	</style>
+	<style name="list_item">
+		<item name="android:background">#141218</item>
+	</style>
 </resources>

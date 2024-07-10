@@ -1,28 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="horizontal"
-	android:layout_width="match_parent"
-	android:layout_height="wrap_content">
-	<TextView
-		android:id="@+id/reason"
-		style="@style/expense_title"
-		android:textAlignment="textStart"
-		android:layout_weight="1"
-		android:layout_width="0dp"
-		android:layout_height="wrap_content" />
-	<TextView
-		android:id="@+id/amount"
-		style="@style/expense_title"
-		android:gravity="center"
-		android:layout_weight="1"
-		android:layout_width="0dp"
-		android:layout_height="match_parent" />
-	<TextView
-		android:id="@+id/date"
-		style="@style/expense_title"
-		android:gravity="center"
-		android:layout_weight="1"
-		android:layout_width="0dp"
-		android:layout_height="match_parent" />
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+   style="@style/list_item"
+    android:minHeight="72dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="24dp">
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="8dp"
+        android:layout_weight=".65"
+        android:paddingTop="16dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/reason"
+            style="@style/headline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:lineSpacingExtra="5sp"
+            android:lineHeight="24sp"
+            android:textSize="16sp"
+            android:letterSpacing="0.03"
+            android:textFontWeight="500"/>
+
+        <TextView
+            android:id="@+id/amount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="top"
+            android:lineSpacingExtra="5sp"
+            android:lineHeight="20sp"
+            android:translationY="-1.8sp"
+            android:textSize="14sp"
+            android:letterSpacing="0.02"
+            android:textFontWeight="400"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/date"
+        style="@style/date"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="8dp"
+        android:layout_weight=".18"
+        android:gravity="center_vertical"
+        android:lineSpacingExtra="3sp"
+        android:lineHeight="16sp"
+        android:translationY="-1.55sp"
+        android:textSize="11sp"
+        android:letterSpacing="0.05"
+        android:textFontWeight="500"
+        />
 </LinearLayout>
