@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
@@ -29,9 +30,13 @@ android {
         viewBinding true
     }
     namespace 'me.drblau.money'
+    kotlinOptions {
+        jvmTarget = '17'
+    }
 }
 
 dependencies {
+    implementation 'androidx.core:core-ktx:1.13.1'
     def room_version = "2.4.2"
 
     implementation "androidx.room:room-runtime:$room_version"
