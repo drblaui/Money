@@ -2,6 +2,7 @@ package me.drblau.money.db;
 
 import android.content.Context;
 
+import androidx.room.AutoMigration;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
@@ -9,7 +10,7 @@ import androidx.room.RoomDatabase;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Expense.class}, version = 1)
+@Database(entities = {Expense.class}, version = 2, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract ExpenseDAO expenseDAO();
 
@@ -24,6 +25,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
     private static AppDatabase buildDatabase(Context context) {
         return Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, "money-expenses")
+                .fallbackToDestructiveMigration()
                 .build();
     }
 }
